@@ -11,22 +11,16 @@ class CarModel(BaseModel):
     cm3: int = Field(..., gt=0, lt=5000)
     km: int = Field(..., gt=0, lt=500000)
     price: int = Field(..., gt=0, lt=100000)
-
-class UpdateCarModel(BaseModel) :
-    brand: Optional[str] = Field(...)    
-    make: Optional[str] = Field(...)
-    year: Optional[str] = Field(..., gt=1970, lt=2025)
-    cm3: Optional[str] = Field(..., gt=0, lt=5000)
-    km: Optional[str] = Field(..., gt=0, lt=500 * 1000)
-    price: Optional[str] = Field(..., gt=0, lt=100 * 1000)
-
-class CarCollection(BaseModel):
-    cars: List[CarModel]
+    # add
+    #user_id: str = Field(...)
+    picture_url: Optional[str] = Field(None)
+    
 
 @field_validator("brand")
 @classmethod
 def check_brand_case(cls, v: str) -> str:
     return v.title()
+
 @field_validator("make")
 @classmethod
 def check_make_case(cls, v: str) -> str:
@@ -43,12 +37,45 @@ model_config = ConfigDict(
             "cm3": 1500,
             "km": 120000,
             "price": 10000,
+            "picture_url": "https://images.pexels.com/photos/2086676/pexels-photo-2086676.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260"
         }
     },
 )
-"""
+
 test_car = CarModel(
-    brand="ford", make="fiesta", year=2019, cm3=1500, km=120000, price=10000
+    brand="ford", make="fiesta", year=2019, cm3=1500, km=120000, price=10000#, user_id="user123"
 )
-"""
 #print(test_car.model_dump())
+
+# add
+class UpdateCarModel(BaseModel):
+    brand: Optional[str] = Field(...)
+    make: Optional[str] = Field(...)
+    year: Optional[str] = Field(..., gt=1970, lt=2025)
+    cm3: Optional[str] = Field(..., gt=0, lt=5000)
+    km: Optional[str] = Field(..., gt=0, lt=500 * 1000)
+    price: Optional[str] = Field(..., gt=0, lt=100 *1000)
+    picture_url: Optional[str] = Field(None)
+
+'''
+class CarCollection(BaseModel):
+    cars: List[CarModel]
+'''
+
+model_config = ConfigDict(
+    populate_by_name=True,
+    arbitrary_types_allowed=True,
+    json_schema_extra={
+        "example": {
+            "brand": "Ford",
+            "make": "Fiesta",
+            "year": 2019,
+            "cm3": 1500,
+            "km": 120000,
+            "price": 10000,   
+        }
+    }
+)
+
+class CarCollection(BaseModel):
+    cars: List[CarModel]
