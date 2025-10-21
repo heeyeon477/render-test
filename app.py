@@ -2,7 +2,7 @@
 #from contextlib import asynccontextmanager
 from fastapi import FastAPI, status
 from fastapi.middleware.cors import CORSMiddleware
-from motor import motor_asyncio
+from motor.motor_asyncio import AsyncIOMotorClient
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
@@ -15,7 +15,7 @@ settings = BaseConfig()
 
 #@asynccontextmanager
 async def lifespan(app: FastAPI):
-    app.client = motor_asyncio.AsyncIOMotorClient(settings.DB_URL)
+    app.client = AsyncIOMotorClient(settings.DB_URL)
     app.db = app.client[settings.DB_NAME]
     try:
         app.client.admin.command("ping")
