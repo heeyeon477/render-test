@@ -3,8 +3,7 @@ from pydantic import BaseModel, ConfigDict, Field, BeforeValidator, field_valida
 PyObjectId = Annotated[str, BeforeValidator(str)]
 
 class CarModel(BaseModel):
-    id: Optional[PyObjectId] = Field(
-        alias="_id", default=None)
+    id: Optional[PyObjectId] = Field(alias="_id", default=None)
     brand: str = Field(...)
     make: str = Field(...)
     year: int = Field(..., gt=1970, lt=2025)
@@ -12,9 +11,19 @@ class CarModel(BaseModel):
     km: int = Field(..., gt=0, lt=500000)
     price: int = Field(..., gt=0, lt=100000)
     # add
-    #user_id: str = Field(...)
+    user_id: str = Field(...)
     picture_url: Optional[str] = Field(None)
+    id: Optional[PyObjectId] = Field(alias="_id", default=None)
+    username: str = Field(..., min_length=3, max_length=15)
+    password: str = Field(...)
     
+class LoginModel(BaseModel):
+    username: str = Field(...)
+    password: str = Field(...)
+
+class CurrentUserModel(BaseModel):
+    id: PyObjectId = Field(alias="_id", default=None)
+    username: str = Field(..., min_length=3, max_length=15)
 
 @field_validator("brand")
 @classmethod
@@ -41,10 +50,11 @@ model_config = ConfigDict(
         }
     },
 )
-
+'''
 test_car = CarModel(
     brand="ford", make="fiesta", year=2019, cm3=1500, km=120000, price=10000#, user_id="user123"
 )
+'''
 #print(test_car.model_dump())
 
 # add
@@ -79,3 +89,8 @@ model_config = ConfigDict(
 
 class CarCollection(BaseModel):
     cars: List[CarModel]
+
+class UserModel(BaseModel):
+    username: str
+    password: str
+    email: Optional[str] = None

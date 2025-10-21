@@ -9,6 +9,7 @@ from fastapi import (
     Request,
     UploadFile, 
     status,
+    Depends
 )
 from fastapi.responses import Response
 from pymongo import ReturnDocument
@@ -16,17 +17,21 @@ import cloudinary
 from cloudinary import uploader # noqa: F401
 from config import BaseConfig
 from models import CarModel, CarCollection
+from authentication import AuthHandler
 
 settings = BaseConfig()
 router = APIRouter()
+auth_handler = AuthHandler()
 CARS_PER_PAGE = 10
 
+# Configure Cloudinary
 cloudinary.config(
     cloud_name=settings.CLOUDINARY_CLOUD_NAME,
     api_key=settings.CLOUDINARY_API_KEY,
     api_secret=settings.CLOUDINARY_SECRET_KEY,
 )
 
+# add car with picture
 @router.post (
     "/",
     response_description="Add new car with picture",
@@ -37,28 +42,34 @@ cloudinary.config(
 
 async def add_car_with_picture(
     request: Request,
-    brand: str = Form(...),
-    make: str = Form(...),
-    year: int = Form(...),
-    cm3: int = Form(...),
-    km: int = Form(...),
-    price: int = Form(...),
+    brand: str = Form("brand"),
+    make: str = Form("make"),
+    year: int = Form("year"),
+    cm3: int = Form("cm3"),
+    km: int = Form("km"),
+    price: int = Form("price"),
     # Accept either a picture URL (string) or an uploaded file. The client
     # can send `picture_url` as a plain form field (string) or an actual file
     # under `picture_file` (multipart). We prefer the uploaded file when both
     # are provided.
+#    picture_file: Optional[UploadFile] = File(None),
+    picture_file: Optional[UploadFile] = File("picture"),
     picture_url: Optional[str] = Form(None),
-    picture_file: Optional[UploadFile] = File(None),
+    user: dict = Depends(auth_handler.auth_wrapper),
 ):
 
     picture_url_result: Optional[str] = None
 
     if picture_file is not None:
-        # upload provided file
         cloudinary_image = cloudinary.uploader.upload(
-            picture_file.file, crop="fill", width=800
+            picture_file.file, 
+            folder="FARM2", 
+            crop="fill", 
+            width=800
         )
+    #picture_url = cloudinary_image["url"]
         picture_url_result = cloudinary_image.get("secure_url")
+
     elif picture_url:
         # use the provided URL as-is
         picture_url_result = picture_url
@@ -70,7 +81,8 @@ async def add_car_with_picture(
         cm3=cm3, # type: ignore
         km=km, # type: ignore
         price=price, # type: ignore
-        picture_url=picture_url_result
+        picture_url=picture_url_result,
+        user_id=user["user_id"],
     )
     cars = request.app.db["cars"]
     document = car.model_dump(by_alias=True, exclude=["id"]) 
@@ -122,4 +134,6 @@ async def show_car(id: str, request: Request):
         raise HTTPException(status_code=404, detail=f"Car {id} not found")
     if (car := await cars.find_one({"_id": ObjectId(id)})) is not None:
         return car
+    
     raise HTTPException(status_code=404, detail=f"Car with {id} not found")
+
