@@ -13,6 +13,11 @@ from routers.users import router as users_router
 
 settings = BaseConfig()
 
+origin = [ 
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
+
 #@asynccontextmanager
 async def lifespan(app: FastAPI):
     app.client = AsyncIOMotorClient(settings.DB_URL)

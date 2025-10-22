@@ -11,12 +11,18 @@ class CarModel(BaseModel):
     km: int = Field(..., gt=0, lt=500000)
     price: int = Field(..., gt=0, lt=100000)
     # add
-    user_id: str = Field(...)
     picture_url: Optional[str] = Field(None)
     id: Optional[PyObjectId] = Field(alias="_id", default=None)
+    '''
+    user_id: str = Field(...)
     username: str = Field(..., min_length=3, max_length=15)
     password: str = Field(...)
+    '''
+    user_id: Optional[str] = None
+    username: Optional[str] = None
+    password: Optional[str] = None
     
+
 class LoginModel(BaseModel):
     username: str = Field(...)
     password: str = Field(...)
@@ -46,6 +52,9 @@ model_config = ConfigDict(
             "cm3": 1500,
             "km": 120000,
             "price": 10000,
+            "user_id": "user123",
+            "username": "lewis",
+            "password": "lewis1234",
             "picture_url": "https://images.pexels.com/photos/2086676/pexels-photo-2086676.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260"
         }
     },
